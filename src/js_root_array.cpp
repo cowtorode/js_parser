@@ -4,8 +4,6 @@
 
 #include <sstream>
 #include "js_root_array.hpp"
-#include "types/js_object.hpp"
-#include "types/js_string.hpp"
 
 namespace json
 {
