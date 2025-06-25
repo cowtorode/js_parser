@@ -16,9 +16,7 @@ namespace json
 	public:
 		explicit root_array(size_t size);
 
-		std::string json_string();
-
-		[[deprecated]] object* add_object();
+		[[nodiscard]] std::string json_string() const;
 	};
 }
 

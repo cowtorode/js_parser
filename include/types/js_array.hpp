@@ -33,6 +33,8 @@ namespace json
 
 		~array();
 
+		void build_json_string(std::stringstream& ss) const;
+
 		void add(entry* data);
 
 		js_result get_object(int index, object*& out) const;

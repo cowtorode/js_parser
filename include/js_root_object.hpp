@@ -16,6 +16,8 @@ namespace json
 	{
 	public:
 		explicit root_object(size_t size);
+
+		std::string json_string() const;
 	};
 }
 

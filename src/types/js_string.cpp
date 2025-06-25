@@ -14,4 +14,9 @@ namespace json
 	{
 		return str;
 	}
+
+	void string::build_json_string(std::stringstream& ss) const
+	{
+		ss << '"' << str << '"';
+	}
 }

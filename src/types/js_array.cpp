@@ -2,6 +2,7 @@
 // Created by cory on 6/14/25.
 //
 
+#include <sstream>
 #include "js_destructor.hpp"
 #include "types/js_object.hpp"
 #include "types/js_array.hpp"
@@ -20,6 +21,56 @@ namespace json
 		{
 			destroy_entry(vec[i]);
 		}
+	}
+
+	void array::build_json_string(std::stringstream& ss) const
+	{
+		ss << '[';
+
+		// this check is necessary since the jmp statement skips over the first while loop check.
+		if (vec.empty())
+		{
+			ss << ']';
+			return;
+		}
+
+		entry* data;
+
+		unsigned long i = 0;
+
+		goto switch_case; // skip the comma prefix for the first array element
+
+		while (i < vec.size())
+		{
+			ss << ',';
+
+			switch_case:
+
+			data = vec[i];
+
+			switch (data->type)
+			{
+				case OBJECT:
+					((object*) data)->build_json_string(ss);
+					break;
+				case BOOL:
+					((boolean*) data)->build_json_string(ss);
+					break;
+				case NUMBER:
+					((number*) data)->build_json_string(ss);
+					break;
+				case STRING:
+					((string*) data)->build_json_string(ss);
+					break;
+				case ARRAY:
+					((array*) data)->build_json_string(ss);
+					break;
+			}
+
+			++i;
+		}
+
+		ss << ']';
 	}
 
 	void array::add(entry* data)

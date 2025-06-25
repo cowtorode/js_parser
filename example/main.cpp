@@ -37,11 +37,13 @@ void print_element(json::object* obj)
     std::cout << std::endl;
 }
 
-void test1()
+static constexpr const char* example_json = R"([{"z":1,"symbol":"H","name":"Hydrogen"},{"z":2,"symbol":"He","name":"Helium"}])";
+
+void parse_json_string()
 {
 	json::parser parser;
 
-	json::entry* array = parser.parse(R"([{"z":1,"symbol":"H","name":"Hydrogen"},{"z":2,"symbol":"He","name":"Helium"}])");
+	json::entry* array = parser.parse(example_json);
 
 	if (array->type == json::ARRAY)
 	{
@@ -59,7 +61,7 @@ void test1()
 	delete (json::root_array*) array;
 }
 
-void test2()
+void parse_json_file()
 {
 	json::parser parser;
 
@@ -87,6 +89,20 @@ void test2()
 	delete (json::root_array*) array;
 }
 
+void parse_json_string_and_serialize_to_json_string()
+{
+	json::parser parser;
+
+	json::entry* array = parser.parse(R"([{"z":1,"symbol":"H","name":"Hydrogen"},{"z":2,"symbol":"He","name":"Helium"},{},[]])");
+
+	if (array->type == json::ARRAY)
+	{
+		std::cout << ((json::root_array*) array)->json_string() << std::endl;
+	}
+
+	delete (json::root_array*) array;
+}
+
 int main()
 {
     // json string
@@ -96,7 +112,9 @@ int main()
     // modifying a root object after its construction and rewriting (json string)
     // benchmarking
 
-    //test1();
-	test2();
+	//parse_json_string();
+	//parse_json_file();
+	parse_json_string_and_serialize_to_json_string();
+
     return 0;
 }

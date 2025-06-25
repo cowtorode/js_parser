@@ -2,7 +2,6 @@
 // Created by cory on 6/14/25.
 //
 
-#include <iostream>
 #include <sstream>
 #include "js_destructor.hpp"
 #include "types/js_object.hpp"
@@ -25,35 +24,52 @@ namespace json
         }
     }
 
-    void object::json_string(std::stringstream& ss)
+    void object::build_json_string(std::stringstream& ss) const
     {
-        for (auto& pair: map)
-        {
-            ss << '"' << pair.first << "\":";
+		ss << '{';
 
-            switch (pair.second->type)
+		auto itr = map.begin();
+
+		// This first check is necessary since the jmp statement skips over it
+		if (itr == map.end())
+		{
+			ss << '}';
+			return;
+		}
+
+		goto switch_case; // skip the comma prefix for the first array element
+
+        while (itr != map.end())
+        {
+			ss << ',';
+
+			switch_case:
+
+            ss << '"' << itr->first << "\":";
+
+            switch (itr->second->type)
             {
                 case OBJECT:
-                    ss << '{';
-                    ((object*) pair.second)->json_string(ss);
-                    ss << '}';
+					((object*) itr->second)->build_json_string(ss);
                     break;
                 case BOOL:
-                    ss << (((boolean*) pair.second)->bool_value() ? "true" : "false");
+                    ((boolean*) itr->second)->build_json_string(ss);
                     break;
                 case NUMBER:
-                    ss << ((number*) pair.second)->double_value();
+					((number*) itr->second)->build_json_string(ss);
                     break;
                 case STRING:
-                    ss << '"' << ((string*) pair.second)->string_value() << '"';
-                    break;
+					((string*) itr->second)->build_json_string(ss);
+					break;
                 case ARRAY:
-                    ss << '[';
-                    //...
-                    ss << ']';
+					((array*) itr->second)->build_json_string(ss);
                     break;
             }
+
+			++itr;
         }
+
+		ss << '}';
     }
 
     void object::add(const std::string& tag, entry* data)

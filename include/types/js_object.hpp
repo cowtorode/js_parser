@@ -35,7 +35,7 @@ namespace json
 
 		~object();
 
-		void json_string(std::stringstream& ss);
+		void build_json_string(std::stringstream& ss) const;
 
 		js_result get_object(const std::string& tag, object*& out) const;
 

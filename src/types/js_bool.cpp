@@ -13,4 +13,15 @@ namespace json
 	{
 		return x;
 	}
+
+	void boolean::build_json_string(std::stringstream& ss) const
+	{
+		if (x)
+		{
+			ss << "true";
+		} else
+		{
+			ss << "false";
+		}
+	}
 }

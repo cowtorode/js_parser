@@ -6,6 +6,7 @@
 #define JSON_JS_BOOL_HPP
 
 
+#include <sstream>
 #include "js_entry.hpp"
 
 namespace json
@@ -16,6 +17,8 @@ namespace json
 		explicit boolean(bool x);
 
 		[[nodiscard]] bool bool_value() const;
+
+		void build_json_string(std::stringstream& ss) const;
 
 	private:
 		bool x;

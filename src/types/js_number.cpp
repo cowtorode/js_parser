@@ -13,4 +13,9 @@ namespace json
 	{
 		return x;
 	}
+
+	void number::build_json_string(std::stringstream& ss) const
+	{
+		ss << x;
+	}
 }
