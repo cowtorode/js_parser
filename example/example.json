@@ -1,0 +1,12 @@
+[
+  {
+    "z": 1,
+    "symbol": "H",
+    "name": "Hydrogen"
+  },
+  {
+    "z": 2,
+    "symbol": "He",
+    "name": "Helium"
+  }
+]
