@@ -1,3 +1,4 @@
+#include <iostream>
 #include "js_parser.hpp"
 #include "js_root_object.hpp"
 #include "js_root_array.hpp"
@@ -462,8 +463,15 @@ namespace json
 	{
 		char buf[1024];
 
+		ssize_t res = json.buffer(buf, sizeof(buf));
+
+		if (res == -1)
+		{
+			return nullptr;
+		}
+
 		cursor = buf;
-		end = buf + json.buffer(buf, 1024);
+		end = buf + res;
 
 		return parse();
 	}

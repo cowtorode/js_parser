@@ -65,7 +65,26 @@ void test2()
 
 	json::file example("/home/cory/CLionProjects/json/example/example.json");
 
-	parser.parse(example);
+	example.open_file();
+
+	json::entry* array = parser.parse(example);
+
+	example.close_file();
+
+	if (array->type == json::ARRAY)
+	{
+		json::object* jso;
+
+		for (int i = 0; i < 2; ++i)
+		{
+			if (((json::array*) array)->get_object(i, jso) == OK)
+			{
+				print_element(jso);
+			}
+		}
+	}
+
+	delete (json::root_array*) array;
 }
 
 int main()
@@ -77,6 +96,7 @@ int main()
     // modifying a root object after its construction and rewriting (json string)
     // benchmarking
 
-    test1();
+    //test1();
+	test2();
     return 0;
 }
