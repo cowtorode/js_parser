@@ -3,93 +3,81 @@
 
 
 #include <stack>
-#include "types/js_data.hpp"
+#include "types/js_entry.hpp"
 #include "types/js_object.hpp"
 #include "memory_pool.hpp"
+#include "io/file.hpp"
 
-class JsonParser
+namespace json
 {
-public:
-    explicit JsonParser(const char* file);
+	class parser
+	{
+	public:
+		explicit parser();
 
-    ~JsonParser();
+		entry* parse(const std::string& json);
 
-    void open_file();
+		entry* parse(const file& json);
 
-    void close_file();
+	private:
+		// state methods
 
-    js_data* parse();
-private:
-    // state methods
+		/**
+		 * @return The number of bytes that are buffered but unread, computed as end - cursor.
+		 */
+		[[nodiscard]] inline long bytes_remaining() const;
 
-    /**
-     * @return The state of this object's file handle, whether opened or closed.
-     */
-    [[nodiscard]] inline bool is_open() const;
+		[[nodiscard]] inline object* top_object() const;
 
-    /**
-     * @return The number of bytes that are buffered but unread, computed as end - cursor.
-     */
-    [[nodiscard]] inline long bytes_remaining() const;
+		[[nodiscard]] inline array* top_array() const;
 
-    [[nodiscard]] inline js_object* top_object() const;
+		char read_char();
 
-    [[nodiscard]] inline js_array* top_array() const;
+		/**
+		 * @return The first nonwhitespace char including and after cursor
+		 */
+		char skip_whitespace();
 
-    /**
-     * Skips a character by incrementing the cursor pointer.
-     */
-    inline void skip_char();
+		/**
+		 * Asserts that the following characters in the stream match the string `s`,
+		 * assuming the first character has already been read and matched.
+		 *
+		 * For example, after encountering 'n', call assert_token("ull") to verify "null".
+		 * @return True if the immediate sequence of chars starting at and including cursor are equivalent to
+		 *         the string of chars passed to this method, and false if there exists a character mismatch.
+		 */
+		bool expect_string(const char* s);
 
-    char read_char();
+		/**
+		 * Reads a string until the specified character exclusive.
+		 * "hello"
+		 *  ^
+		 *  cursor
+		 * read_string('"') will return "hello"
+		 * @return The string starting at and including cursor until the passed character, exclusive.
+		 */
+		std::string read_string(char until);
 
-    /**
-     * @return The first nonwhitespace char including and after cursor
-     */
-    char skip_whitespace();
+		double read_double();
 
-    /**
-     * Asserts that the following characters in the stream match the string `s`,
-     * assuming the first character has already been read and matched.
-     *
-     * For example, after encountering 'n', call assert_token("ull") to verify "null".
-     * @return True if the immediate sequence of chars starting at and including cursor are equivalent to
-     *         the string of chars passed to this method, and false if there exists a character mismatch.
-     */
-    bool expect_string(const char* s);
+		/**
+		 * Read an object, number, string, boolean, null, or array, and write it to the specified label.
+		 */
+		void parse_object_entry_data(const std::string& label);
 
-    /**
-     * Reads a string until the specified character exclusive.
-     * "hello"
-     *  ^
-     *  cursor
-     * read_string('"') will return "hello"
-     * @return The string starting at and including cursor until the passed character, exclusive.
-     */
-    std::string read_string(char until);
+		void parse_object();
 
-    double read_double();
+		void parse_array();
 
-    /**
-     * Read an object, number, string, boolean, null, or array, and write it to the specified label.
-     */
-    void parse_object_entry_data(const std::string& label);
+		entry* parse();
 
-    void parse_object();
-
-    void parse_array();
-
-    const char* file;
-    int fd;
-
-    unsigned long long res;
-    char buf[1024];
-    char* cursor;
-    char* end;
-    // only ever a js_root_array or js_root_object
-    std::stack<js_data*> parse_stack;
-    MemoryPool* pool;
-};
+		const char* cursor;
+		const char* end;
+		// only ever a root_array or root_object
+		std::stack<entry*> parse_stack;
+		MemoryPool* pool;
+	};
+}
 
 
 #endif //JSON_JS_PARSER_HPP
