@@ -7,7 +7,7 @@
 #include "types/js_array.hpp"
 #include "types/js_string.hpp"
 #include "js_root_array.hpp"
-#include "js_parser.hpp"
+#include "parse/js_parser.hpp"
 #include "io/file.hpp"
 
 void print_element(json::object* obj)

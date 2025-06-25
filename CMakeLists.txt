@@ -4,8 +4,8 @@ project(json)
 set(CMAKE_CXX_STANDARD 20)
 
 add_library(json STATIC
-        src/js_parser.cpp
-        include/js_parser.hpp
+        src/parse/js_parser.cpp
+        include/parse/js_parser.hpp
         include/types/js_type.hpp
         src/types/js_entry.cpp
         include/types/js_entry.hpp
@@ -25,8 +25,8 @@ add_library(json STATIC
         include/js_root_object.hpp
         src/js_root_array.cpp
         include/js_root_array.hpp
-        include/js_destructor.hpp
-        src/js_destructor.cpp
+        include/util/js_destructor.hpp
+        src/util/js_destructor.cpp
         src/memory_pool.cpp
         include/memory_pool.hpp
         src/js_root.cpp

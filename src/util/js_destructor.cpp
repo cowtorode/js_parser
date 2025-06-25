@@ -2,7 +2,7 @@
 // Created by cory on 6/24/25.
 //
 
-#include "js_destructor.hpp"
+#include "util/js_destructor.hpp"
 #include "types/js_object.hpp"
 #include "types/js_bool.hpp"
 #include "types/js_number.hpp"

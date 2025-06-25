@@ -1,5 +1,5 @@
 #include <iostream>
-#include "js_parser.hpp"
+#include "parse/js_parser.hpp"
 #include "js_root_object.hpp"
 #include "js_root_array.hpp"
 #include "types/js_number.hpp"
