@@ -4,5 +4,7 @@
 
 #include "js_root_object.hpp"
 
-js_root_object::js_root_object(size_t size) : js_root(size), js_object()
-{}
+namespace json
+{
+	root_object::root_object(size_t size) : js_root(size), object() {}
+}

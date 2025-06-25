@@ -4,9 +4,13 @@
 
 #include "types/js_number.hpp"
 
-js_number::js_number(double number) : js_data(NUMBER), number(number) {}
-
-double js_number::double_value() const
+namespace json
 {
-    return number;
+	number::number(double x) : entry(NUMBER), x(x)
+	{}
+
+	double number::double_value() const
+	{
+		return x;
+	}
 }

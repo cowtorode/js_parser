@@ -5,9 +5,9 @@
 #ifndef JSON_JS_TYPE_HPP
 #define JSON_JS_TYPE_HPP
 
-enum js_type : char
+namespace json
 {
-    OBJECT, BOOL, NUMBER, STRING, ARRAY
-};
+	enum type : char { OBJECT, BOOL, NUMBER, STRING, ARRAY };
+}
 
 #endif //JSON_JS_TYPE_HPP

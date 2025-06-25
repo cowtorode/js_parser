@@ -6,18 +6,21 @@
 #define JSON_JS_NUMBER_HPP
 
 
-#include "js_data.hpp"
+#include "js_entry.hpp"
 
-class js_number : public js_data
+namespace json
 {
-public:
-    explicit js_number(double number);
+	class number : public entry
+	{
+	public:
+		explicit number(double x);
 
-    [[nodiscard]] double double_value() const;
+		[[nodiscard]] double double_value() const;
 
-private:
-    double number;
-};
+	private:
+		double x;
+	};
+}
 
 
 #endif //JSON_JS_NUMBER_HPP

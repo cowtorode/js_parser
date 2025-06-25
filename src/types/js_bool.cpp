@@ -4,9 +4,13 @@
 
 #include "types/js_bool.hpp"
 
-js_bool::js_bool(bool boolean) : js_data(BOOL), boolean(boolean) {}
-
-bool js_bool::bool_value() const
+namespace json
 {
-    return boolean;
+	boolean::boolean(bool x) : entry(BOOL), x(x)
+	{}
+
+	bool boolean::bool_value() const
+	{
+		return x;
+	}
 }

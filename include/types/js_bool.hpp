@@ -6,18 +6,21 @@
 #define JSON_JS_BOOL_HPP
 
 
-#include "js_data.hpp"
+#include "js_entry.hpp"
 
-class js_bool : public js_data
+namespace json
 {
-public:
-    explicit js_bool(bool boolean);
+	class boolean : public entry
+	{
+	public:
+		explicit boolean(bool x);
 
-    [[nodiscard]] bool bool_value() const;
+		[[nodiscard]] bool bool_value() const;
 
-private:
-    bool boolean;
-};
+	private:
+		bool x;
+	};
+}
 
 
 #endif //JSON_JS_BOOL_HPP

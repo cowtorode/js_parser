@@ -7,17 +7,21 @@
 
 
 #include <string>
-#include "js_data.hpp"
+#include "js_entry.hpp"
 
-class js_string : public js_data
+namespace json
 {
-public:
-    explicit js_string(std::string str);
+	class string : public entry
+	{
+	public:
+		explicit string(std::string str);
 
-    [[nodiscard]] const std::string& string_value() const;
-private:
-    std::string str;
-};
+		[[nodiscard]] const std::string& string_value() const;
+
+	private:
+		std::string str;
+	};
+}
 
 
 #endif //JSON_JS_STRING_HPP

@@ -9,15 +9,18 @@
 #include "js_root.hpp"
 #include "types/js_array.hpp"
 
-class js_root_array : public js_root, public js_array
+namespace json
 {
-public:
-    explicit js_root_array(size_t size);
+	class root_array : public js_root, public array
+	{
+	public:
+		explicit root_array(size_t size);
 
-    std::string json_string();
+		std::string json_string();
 
-    [[deprecated]] js_object* add_object();
-};
+		[[deprecated]] object* add_object();
+	};
+}
 
 
 #endif //JSON_JS_ROOT_ARRAY_HPP

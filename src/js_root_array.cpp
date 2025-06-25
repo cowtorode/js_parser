@@ -9,46 +9,49 @@
 #include "types/js_bool.hpp"
 #include "types/js_string.hpp"
 
-js_root_array::js_root_array(size_t size) : js_root(size), js_array()
-{}
-
-js_object* js_root_array::add_object()
+namespace json
 {
-    js_object* jso = new (pool.palloc(sizeof(js_object), alignof(js_object))) js_object;
+	root_array::root_array(size_t size) : js_root(size), array()
+	{}
 
-    add(jso);
+	object* root_array::add_object()
+	{
+		object* jso = new(pool.palloc(sizeof(object), alignof(object))) object;
 
-    std::cout << "  added js_object" << std::endl;
+		add(jso);
 
-    return jso;
-}
+		std::cout << "  added object" << std::endl;
 
-std::string js_root_array::json_string()
-{
-    std::stringstream ss;
+		return jso;
+	}
 
-    ss << '[';
+	std::string root_array::json_string()
+	{
+		std::stringstream ss;
 
-    for (js_data* data : array)
-    {
-        switch (data->type)
-        {
-            case OBJECT:
-                ss << '{';
-                ((js_object*) data)->json_string(ss);
-                ss << '}';
-                break;
-            case BOOL:
-                break;
-            case NUMBER:
-                break;
-            case STRING:
-                break;
-            case ARRAY:
-                break;
-        }
-    }
+		ss << '[';
 
-    ss << ']';
-    return ss.str();
+		for (entry* data: vec)
+		{
+			switch (data->type)
+			{
+				case OBJECT:
+					ss << '{';
+					((object*) data)->json_string(ss);
+					ss << '}';
+					break;
+				case BOOL:
+					break;
+				case NUMBER:
+					break;
+				case STRING:
+					break;
+				case ARRAY:
+					break;
+			}
+		}
+
+		ss << ']';
+		return ss.str();
+	}
 }

@@ -10,11 +10,14 @@
 #include "types/js_object.hpp"
 #include "memory_pool.hpp"
 
-class js_root_object : public js_root, public js_object
+namespace json
 {
-public:
-    explicit js_root_object(size_t size);
-};
+	class root_object : public js_root, public object
+	{
+	public:
+		explicit root_object(size_t size);
+	};
+}
 
 
 #endif //JSON_JS_ROOT_OBJECT_HPP

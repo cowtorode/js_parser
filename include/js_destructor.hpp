@@ -6,9 +6,11 @@
 #define JSON_JS_DESTRUCTOR_HPP
 
 
-#include "types/js_data.hpp"
+#include "types/js_entry.hpp"
 
-void destroy_js_data(js_data* data);
-
+namespace json
+{
+	void destroy_entry(entry*);
+}
 
 #endif //JSON_JS_DESTRUCTOR_HPP

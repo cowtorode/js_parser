@@ -12,206 +12,210 @@
 #include "types/js_array.hpp"
 #include "js_root.hpp"
 
-js_object::js_object() : js_data(OBJECT) {}
-
-js_object::~js_object()
+namespace json
 {
-    for (auto& pair : map)
-    {
-        destroy_js_data(pair.second);
-    }
-}
+    object::object() : entry(OBJECT)
+    {}
 
-void js_object::json_string(std::stringstream& ss)
-{
-    for (auto& pair : map)
+    object::~object()
     {
-        ss << '"' << pair.first << "\":";
-
-        switch (pair.second->type)
+        for (auto& pair: map)
         {
-            case OBJECT:
-                ss << '{';
-                ((js_object*) pair.second)->json_string(ss);
-                ss << '}';
-                break;
-            case BOOL:
-                ss << (((js_bool*) pair.second)->bool_value() ? "true" : "false");
-                break;
-            case NUMBER:
-                ss << ((js_number*) pair.second)->double_value();
-                break;
-            case STRING:
-                ss << '"' << ((js_string*) pair.second)->string_value() << '"';
-                break;
-            case ARRAY:
-                ss << '[';
-                //...
-                ss << ']';
-                break;
+			destroy_entry(pair.second);
         }
     }
-}
 
-void js_object::add(const std::string& tag, js_data* data)
-{
-    map[tag] = data;
-}
-
-js_result js_object::get_object(const std::string& tag, js_object*& object) const
-{
-    auto itr = map.find(tag);
-
-    if (itr == map.end())
+    void object::json_string(std::stringstream& ss)
     {
-        return INVALID_INDEX;
+        for (auto& pair: map)
+        {
+            ss << '"' << pair.first << "\":";
+
+            switch (pair.second->type)
+            {
+                case OBJECT:
+                    ss << '{';
+                    ((object*) pair.second)->json_string(ss);
+                    ss << '}';
+                    break;
+                case BOOL:
+                    ss << (((boolean*) pair.second)->bool_value() ? "true" : "false");
+                    break;
+                case NUMBER:
+                    ss << ((number*) pair.second)->double_value();
+                    break;
+                case STRING:
+                    ss << '"' << ((string*) pair.second)->string_value() << '"';
+                    break;
+                case ARRAY:
+                    ss << '[';
+                    //...
+                    ss << ']';
+                    break;
+            }
+        }
     }
 
-    js_data* data = itr->second;
-
-    if (!data)
+    void object::add(const std::string& tag, entry* data)
     {
-        return NULL_DATA;
+        map[tag] = data;
     }
 
-    if (data->type == OBJECT)
+    js_result object::get_object(const std::string& tag, object*& out) const
     {
-        object = ((js_object*) data);
-        return OK;
+        auto itr = map.find(tag);
+
+        if (itr == map.end())
+        {
+            return INVALID_INDEX;
+        }
+
+        entry* data = itr->second;
+
+        if (!data)
+        {
+            return NULL_DATA;
+        }
+
+        if (data->type == OBJECT)
+        {
+			out = ((object*) data);
+            return OK;
+        }
+
+        return TYPE_MISMATCH;
     }
 
-    return TYPE_MISMATCH;
-}
-
-js_result js_object::get_bool(const std::string& tag, bool& b) const
-{
-    auto itr = map.find(tag);
-
-    if (itr == map.end())
+    js_result object::get_bool(const std::string& tag, bool& out) const
     {
-        return INVALID_INDEX;
+        auto itr = map.find(tag);
+
+        if (itr == map.end())
+        {
+            return INVALID_INDEX;
+        }
+
+        entry* data = itr->second;
+
+        if (!data)
+        {
+            return NULL_DATA;
+        }
+
+        if (data->type == BOOL)
+        {
+			out = ((boolean*) data)->bool_value();
+            return OK;
+        }
+
+        return TYPE_MISMATCH;
     }
 
-    js_data* data = itr->second;
-
-    if (!data)
+    js_result object::get_number(const std::string& tag, double& out) const
     {
-        return NULL_DATA;
+        auto itr = map.find(tag);
+
+        if (itr == map.end())
+        {
+            return INVALID_INDEX;
+        }
+
+        entry* data = itr->second;
+
+        if (!data)
+        {
+            return NULL_DATA;
+        }
+
+        if (data->type == NUMBER)
+        {
+			out = ((number*) data)->double_value();
+            return OK;
+        }
+
+        return TYPE_MISMATCH;
     }
 
-    if (data->type == BOOL)
+    js_result object::get_string(const std::string& tag, std::string& out) const
     {
-        b = ((js_bool*) data)->bool_value();
-        return OK;
+        auto itr = map.find(tag);
+
+        if (itr == map.end())
+        {
+            return INVALID_INDEX;
+        }
+
+        entry* data = itr->second;
+
+        if (!data)
+        {
+            return NULL_DATA;
+        }
+
+        if (data->type == STRING)
+        {
+			out = ((string*) data)->string_value();
+            return OK;
+        }
+
+        return TYPE_MISMATCH;
     }
 
-    return TYPE_MISMATCH;
-}
-
-js_result js_object::get_number(const std::string& tag, double& d) const
-{
-    auto itr = map.find(tag);
-
-    if (itr == map.end())
+    js_result object::get_array(const std::string& tag, array*& out) const
     {
-        return INVALID_INDEX;
+        auto itr = map.find(tag);
+
+        if (itr == map.end())
+        {
+            return INVALID_INDEX;
+        }
+
+        entry* data = itr->second;
+
+        if (!data)
+        {
+            return NULL_DATA;
+        }
+
+        if (data->type == ARRAY)
+        {
+			out = ((array*) data);
+            return OK;
+        }
+
+        return TYPE_MISMATCH;
     }
 
-    js_data* data = itr->second;
-
-    if (!data)
+    object* object::add_object(js_root* root, const std::string& tag)
     {
-        return NULL_DATA;
+        object* jso = new(root->get_pool()->palloc(sizeof(object), alignof(object))) object;
+
+        add(tag, jso);
+
+        return jso;
     }
 
-    if (data->type == NUMBER)
+    void object::add_bool(js_root* root, const std::string& tag, bool x)
     {
-        d = ((js_number*) data)->double_value();
-        return OK;
+        add(tag, new(root->get_pool()->palloc(sizeof(boolean), alignof(boolean))) boolean(x));
     }
 
-    return TYPE_MISMATCH;
-}
-
-js_result js_object::get_string(const std::string& tag, std::string& str) const
-{
-    auto itr = map.find(tag);
-
-    if (itr == map.end())
+    void object::add_number(js_root* root, const std::string& tag, double x)
     {
-        return INVALID_INDEX;
+        add(tag, new(root->get_pool()->palloc(sizeof(number), alignof(number))) number(x));
     }
 
-    js_data* data = itr->second;
-
-    if (!data)
+    void object::add_string(js_root* root, const std::string& tag, const std::string& x)
     {
-        return NULL_DATA;
+        add(tag, new(root->get_pool()->palloc(sizeof(string), alignof(string))) string(x));
     }
 
-    if (data->type == STRING)
+    array* object::add_array(js_root* root, const std::string& tag)
     {
-        str = ((js_string*) data)->string_value();
-        return OK;
+        array* jsa = new(root->get_pool()->palloc(sizeof(array), alignof(array))) array;
+
+        add(tag, jsa);
+
+        return jsa;
     }
-
-    return TYPE_MISMATCH;
-}
-
-js_result js_object::get_array(const std::string& tag, js_array*& array) const
-{
-    auto itr = map.find(tag);
-
-    if (itr == map.end())
-    {
-        return INVALID_INDEX;
-    }
-
-    js_data* data = itr->second;
-
-    if (!data)
-    {
-        return NULL_DATA;
-    }
-
-    if (data->type == ARRAY)
-    {
-        array = ((js_array*) data);
-        return OK;
-    }
-
-    return TYPE_MISMATCH;
-}
-
-js_object* js_object::add_object(js_root* root, const std::string& tag)
-{
-    js_object* jso = new (root->get_pool()->palloc(sizeof(js_object), alignof(js_object))) js_object;
-
-    add(tag, jso);
-
-    return jso;
-}
-
-void js_object::add_bool(js_root* root, const std::string& tag, bool x)
-{
-    add(tag, new (root->get_pool()->palloc(sizeof(js_bool), alignof(js_bool))) js_bool(x));
-}
-
-void js_object::add_number(js_root* root, const std::string& tag, double x)
-{
-    add(tag, new (root->get_pool()->palloc(sizeof(js_number), alignof(js_number))) js_number(x));
-}
-
-void js_object::add_string(js_root* root, const std::string& tag, const std::string& x)
-{
-    add(tag, new (root->get_pool()->palloc(sizeof(js_string), alignof(js_string))) js_string(x));
-}
-
-js_array* js_object::add_array(js_root* root, const std::string& tag)
-{
-    js_array* jsa = new (root->get_pool()->palloc(sizeof(js_array), alignof(js_array))) js_array;
-
-    add(tag, jsa);
-
-    return jsa;
 }

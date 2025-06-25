@@ -7,8 +7,8 @@ add_library(json STATIC
         src/js_parser.cpp
         include/js_parser.hpp
         include/types/js_type.hpp
-        src/types/js_data.cpp
-        include/types/js_data.hpp
+        src/types/js_entry.cpp
+        include/types/js_entry.hpp
         src/types/js_object.cpp
         include/types/js_object.hpp
         src/types/js_array.cpp
@@ -30,6 +30,8 @@ add_library(json STATIC
         src/memory_pool.cpp
         include/memory_pool.hpp
         src/js_root.cpp
+        src/io/file.cpp
+        include/io/file.hpp
 )
 
 # This makes the include/ directory available to anything that links json

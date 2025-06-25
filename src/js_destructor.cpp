@@ -9,24 +9,27 @@
 #include "types/js_string.hpp"
 #include "types/js_array.hpp"
 
-void destroy_js_data(js_data* data)
+namespace json
 {
-    switch (data->type)
-    {
-        case OBJECT:
-            ((js_object*) data)->~js_object();
-            break;
-        case BOOL:
-            ((js_bool*) data)->~js_bool();
-            break;
-        case NUMBER:
-            ((js_number*) data)->~js_number();
-            break;
-        case STRING:
-            ((js_string*) data)->~js_string();
-            break;
-        case ARRAY:
-            ((js_array*) data)->~js_array();
-            break;
-    }
+	void destroy_entry(entry* data)
+	{
+		switch (data->type)
+		{
+			case OBJECT:
+				((object*) data)->~object();
+				break;
+			case BOOL:
+				((boolean*) data)->~boolean();
+				break;
+			case NUMBER:
+				((number*) data)->~number();
+				break;
+			case STRING:
+				((string*) data)->~string();
+				break;
+			case ARRAY:
+				((array*) data)->~array();
+				break;
+		}
+	}
 }
