@@ -2,7 +2,6 @@
 // Created by cory on 6/14/25.
 //
 
-#include <sstream>
 #include "js_destructor.hpp"
 #include "types/js_object.hpp"
 #include "types/js_array.hpp"
@@ -48,6 +47,7 @@ namespace json
 
 			data = vec[i];
 
+			// todo: make this into util method as it's duplicated in js_object.cpp
 			switch (data->type)
 			{
 				case OBJECT:
