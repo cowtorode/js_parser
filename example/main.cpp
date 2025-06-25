@@ -71,6 +71,13 @@ void test1()
 
 int main()
 {
+    // json string
+    // multiple file parsing with the same JsonParser
+    // parse all data types
+    // after how many objects nested does the parser fail?
+    // modifying a root object after its construction and rewriting (json string)
+    // benchmarking
+
     //test1();
 
     JsonParser parser{"/home/cory/CLionProjects/json/example/example.json"};
