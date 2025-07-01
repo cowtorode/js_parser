@@ -224,6 +224,7 @@ namespace json
 				x += (c - '0');
 			} else if (c == '.')
 			{
+				skip_char();
 				break; // goto decimal parsing
 			} else
 			{
