@@ -1,14 +1,69 @@
 #include <iostream>
 #include "parse/js_parser.hpp"
-#include "js_root_object.hpp"
-#include "js_root_array.hpp"
 #include "types/js_number.hpp"
 #include "types/js_bool.hpp"
 #include "types/js_string.hpp"
+#include "util/math.hpp"
 
 namespace json
 {
-	parser::parser() : cursor(nullptr), end(nullptr), parse_stack(), pool(nullptr) {}
+	const char* code_str(error_code code)
+	{
+		switch (code)
+		{
+			case OK: return nullptr;
+			case INVALID_OBJECT_ENTRY_SYNTAX: return "invalid syntax for object entry";
+			case INVALID_ARRAY_ENTRY_SYNTAX: return "invalid syntax for array entry";
+			case INVALID_NUMBER_DIGIT: return "encountered nondigit in number";
+			case EXPECTED_ULL: return "expected 'ull' to complete null token";
+			case EXPECTED_RUE: return "expected 'rue' to complete true token";
+			case EXPECTED_ALSE: return "expected 'alse' to complete false token";
+			case IO_EXCEPTION: return "failed to read file";
+			case OVERFLOW: return "unable to finish parsing due to incomplete json source";
+		}
+	}
+
+	parser::parser() : err(OK), cursor(nullptr), end(nullptr), parse_stack(), pool(nullptr) {}
+
+	error_code parser::code() const
+	{
+		return err;
+	}
+
+	void parser::print_code() const
+	{
+		//	std::string:line:char: error (code): expected 'alse' to complete 'false' boolean value
+		//		"test":frue
+		//			    ^
+
+		//	example.json:line:char: error (code): ...
+
+		if (err)
+		{
+			// todo Source
+			std::cerr << "std::string:0:0: error (" << err << "): " << code_str(err);
+
+			// fixme This probably shouldn't go here for cases when err isn't related to errno
+			if (errno)
+			{
+				std::cerr << ": ";
+				perror(nullptr);
+			} else
+			{
+				std::cerr << std::endl;
+			}
+
+			std::cerr << '\t';
+
+			for (int i = 0; i < 25; ++i)
+			{
+				std::cerr << cursor[i];
+			}
+
+			std::cerr << std::endl
+			          << "\t^" << std::endl;
+		}
+	}
 
 	object* parser::top_object() const
 	{
@@ -25,38 +80,60 @@ namespace json
 		return end - cursor;
 	}
 
+	void parser::skip_char()
+	{
+		if (bytes_remaining() < sizeof(char))
+		{
+			// todo if reading fails
+			err = OVERFLOW;
+		} else
+		{
+			++cursor;
+		}
+	}
+
+	char parser::peek_char()
+	{
+		return *cursor;
+	}
+
 	char parser::read_char()
 	{
 		if (bytes_remaining() < sizeof(char))
 		{
-			throw 0;
-			// read more? What do we do here?
+			// todo if reading fails
+			err = OVERFLOW;
 			return 0;
 		}
 
 		return *cursor++;
 	}
 
-	char parser::skip_whitespace()
+	char parser::read_relevant_char()
 	{
 		while (true)
 		{
-			char c;
+			char c = read_char();
 
-			switch (c = read_char())
+			if (is_relevant(c))
 			{
-				case '\t': // Horizontal Tab (0x09)
-				case '\n': // Line Feed (0x0A)
-				case '\v': // Vertical Tab (0x0B)
-				case '\f': // Form Feed (0x0C)
-				case '\r': // Carriage Return (0x0D)
-				case ' ':  // Space (0x20)
-					// do nothing
-					break;
-				default:
-					// we've expired all the whitespace chars, we can now return
-					return c;
+				return c;
 			}
+		}
+	}
+
+	char parser::peek_relevant_char()
+	{
+		while (true)
+		{
+			char c = peek_char();
+
+			if (is_relevant(c))
+			{
+				return c;
+			}
+
+			skip_char();
 		}
 	}
 
@@ -89,9 +166,77 @@ namespace json
 		return rax;
 	}
 
-	double parser::read_double()
+	double parser::read_decimal()
 	{
-		return 1;
+		/* This places the cursor one after a '.' symbol:
+		   .1415
+		    ^ cursor
+		   h = 0.1
+		   x = (1 * h) + (4 * h * h) + (1 * h * h * h) + ... */
+
+		double x = 0;
+		char c;
+		double decimal_place = INVERSE_10;
+
+		// parses d, the decimal segment of the double
+		while (true)
+		{
+			c = peek_char();
+
+			if (!c)
+			{
+				return x;
+			}
+
+			if (is_digit(c))
+			{
+				x += (c - '0') * decimal_place;
+				decimal_place *= INVERSE_10;
+			} else
+			{
+				// number has ended, we need to parse the current char for other syntax
+				return x;
+			}
+
+			skip_char();
+		}
+	}
+
+	double parser::read_number()
+	{
+		double x = 0;
+		char c;
+
+		// This loop parses the integer segment of the double
+		while (true)
+		{
+			c = peek_char();
+
+			// todo refactor to err
+			if (!c)
+			{
+				return x;
+			}
+
+			if (is_digit(c))
+			{
+				x *= 10;
+				x += (c - '0');
+			} else if (c == '.')
+			{
+				break; // goto decimal parsing
+			} else
+			{
+				// number has ended, we need to parse the current char for other syntax
+				return x;
+			}
+
+			skip_char();
+		}
+
+		x += read_decimal();
+
+		return x;
 	}
 
 	static boolean* new_js_bool(MemoryPool* pool, bool x)
@@ -125,39 +270,53 @@ namespace json
 		// a subtype of object*, so top_object() is fine to access and push
 		// data to. See parse_object for more context information.
 
-		switch (skip_whitespace())
+		char c = peek_relevant_char();
+
+		switch (c)
 		{
 			case 'n':
+				skip_char();
 				if (expect_string("ull"))
 				{
 					top_object()->add(label, nullptr);
 					break;
 				}
 
-				// except
+				err = EXPECTED_ULL;
 				return;
 			case 't':
+				skip_char();
 				if (expect_string("rue"))
 				{
 					top_object()->add(label, new_js_bool(pool, true));
 					break;
 				}
 
-				// except
+				err = EXPECTED_RUE;
 				return;
 			case 'f':
+				skip_char();
 				if (expect_string("alse"))
 				{
 					top_object()->add(label, new_js_bool(pool, false));
 					break;
 				}
 
-				// except
+				err = EXPECTED_ALSE;
 				return;
 			case '.':
+				skip_char();
+				top_object()->add(label, new_js_number(pool, read_decimal()));
+				break;
 			case '-':
+				skip_char();
+				top_object()->add(label, new_js_number(pool, -read_number()));
+				break;
 			case '+':
 			case '0':
+				skip_char();
+				top_object()->add(label, new_js_number(pool, read_number()));
+				break;
 			case '1':
 			case '2':
 			case '3':
@@ -167,15 +326,17 @@ namespace json
 			case '7':
 			case '8':
 			case '9':
-				top_object()->add(label, new_js_number(pool, read_double()));
+				top_object()->add(label, new_js_number(pool, read_number()));
 				break;
 			case '"':
+				skip_char();
 				// "string"
 				//  ^     ^
 				//  start end
 				top_object()->add(label, new_js_string(pool, read_string('"')));
 				break;
 			case '{':
+				skip_char();
 				parse_stack.push(new_js_object(pool));
 
 				parse_object();
@@ -183,6 +344,7 @@ namespace json
 				parse_stack.pop();
 				break;
 			case '[':
+				skip_char();
 				parse_stack.push(new_js_array(pool));
 
 				parse_array();
@@ -190,7 +352,7 @@ namespace json
 				parse_stack.pop();
 				break;
 			default:
-				// todo illegal syntax
+				err = INVALID_OBJECT_ENTRY_SYNTAX;
 				return;
 		}
 	}
@@ -216,7 +378,7 @@ namespace json
 		   - boolean "label": true     "label": false
 		   - string  "label": "Norris"
 		   - object  "label": {}                      (nested objects may be populated with object entries)
-		   - array   "label": []                      (nested arrays may be populated with vec entries)
+		   - array   "label": []                      (nested arrays may be populated with array entries)
 		   */
 
 		/* This method assumes that the top of the parse_stack points to some type that's
@@ -225,7 +387,7 @@ namespace json
 		   ("label":"value") to it. */
 
 		// This gives us the first char of the first entry in the object.
-		char c = skip_whitespace();
+		char c = read_relevant_char();
 
 		while (true)
 		{
@@ -246,9 +408,9 @@ namespace json
 					std::string label = read_string('"');
 
 					// the next char after the label needs to be a colon
-					if (skip_whitespace() != ':')
+					if (read_relevant_char() != ':')
 					{
-						// todo except
+						err = INVALID_OBJECT_ENTRY_SYNTAX;
 						return;
 					}
 
@@ -261,7 +423,7 @@ namespace json
 					return;
 			}
 
-			c = skip_whitespace();
+			c = read_relevant_char();
 
 			// This switch case handles commas and object ending after entries finish.
 			switch (c)
@@ -270,12 +432,12 @@ namespace json
 					return;
 				case ',': // expect an additional entry
 					break;
-				default: // illegal character
-					// except
+				default:
+					err = INVALID_OBJECT_ENTRY_SYNTAX;
 					return;
 			}
 
-			c = skip_whitespace();
+			c = read_relevant_char();
 		}
 	}
 
@@ -308,7 +470,7 @@ namespace json
 		   as a array* via top_array() in order to push array entries to it. */
 
 		// This gives us the first char of the first array element, (or ']' if it's empty)
-		char c = skip_whitespace();
+		char c = peek_relevant_char();
 
 		while (true)
 		{
@@ -318,20 +480,31 @@ namespace json
 			switch (c)
 			{
 				case ']': // empty array
+					skip_char();
 					return;
 				case 'n': // null
+					skip_char();
 					if (expect_string("ull"))
 					{
 						top_array()->add(nullptr);
 					} else
 					{
-						// except
+						err = EXPECTED_ULL;
 					}
 					break;
 				case '.':
+					skip_char();
+					top_array()->add(new_js_number(pool, read_decimal()));
+					break;
 				case '-':
+					skip_char();
+					top_array()->add(new_js_number(pool, -read_number()));
+					break;
 				case '+':
 				case '0':
+					skip_char();
+					top_array()->add(new_js_number(pool, read_number()));
+					break;
 				case '1':
 				case '2':
 				case '3':
@@ -340,10 +513,11 @@ namespace json
 				case '6':
 				case '7':
 				case '8':
-				case '9': // double
-					top_array()->add(new_js_number(pool, read_double()));
+				case '9':
+					top_array()->add(new_js_number(pool, read_number()));
 					break;
 				case 't': // boolean true
+					skip_char();
 					// todo lowercase json
 					if (expect_string("rue"))
 					{
@@ -351,6 +525,7 @@ namespace json
 					}
 					break;
 				case 'f': // boolean false
+					skip_char();
 					if (expect_string("alse"))
 					{
 						top_array()->add(new_js_bool(pool, false));
@@ -358,6 +533,7 @@ namespace json
 					break;
 				case '"': // string
 				{
+					skip_char();
 					// "string"
 					//  ^     ^
 					//  start end
@@ -369,6 +545,7 @@ namespace json
 				}
 				case '{': // object
 				{
+					skip_char();
 					object* object = new_js_object(pool);
 					top_array()->add(object);
 					parse_stack.push(object);
@@ -380,6 +557,7 @@ namespace json
 				}
 				case '[': // array
 				{
+					skip_char();
 					array* array = new_js_array(pool);
 					top_array()->add(array);
 					parse_stack.push(array);
@@ -390,12 +568,12 @@ namespace json
 					break;
 				}
 				default:
-					// invalid character
+					err = INVALID_ARRAY_ENTRY_SYNTAX;
 					return;
 			}
 
 			// This gives us the first char after each array element, which parsing is left to this next switch case.
-			c = skip_whitespace();
+			c = read_relevant_char();
 
 			// In all cases, the chars after each array element can only either be a comma, or the end of the array.
 			switch (c)
@@ -404,75 +582,81 @@ namespace json
 					return;
 				case ',': // continue
 					break;
-				default: // invalid character
+				default:
+					err = INVALID_ARRAY_ENTRY_SYNTAX;
 					return;
 			}
 
 			// If not returned, this gives us the first char of the next array element
-			c = skip_whitespace();
+			c = peek_relevant_char();
 		}
 	}
 
-	entry* parser::parse()
-	{
-		// switch the first nonwhitespace character in the file.
-		switch (skip_whitespace())
-		{
-			case '{':
-			{
-				root_object* root = new root_object(1024);
-				parse_stack.push(root);
-				pool = root->get_pool();
-
-				parse_object();
-
-				/* We can return the value inserted into the parse stack, but I just store it on the stack to be sure that
-				   what we heap allocated is what's returned, because if for any reason the root_object wasn't on the
-				   top of the stack by the time we got here, we'd be returning dirt memory. */
-				return root;
-			}
-			case '[':
-			{
-				root_array* root = new root_array(1024);
-				pool = root->get_pool();
-				parse_stack.push(root);
-
-				parse_array();
-
-				//not needed since this the parse_stack isn't used after this for this same parse
-				//parse_stack.pop();
-
-				return root;
-			}
-			default:
-				// invalid character
-				// todo whenever there's an error we need to delete the root
-				return nullptr;
-		}
-	}
-
-	entry* parser::parse(const std::string& json)
+	bool parser::parse_into(array_document& out, const std::string& json)
 	{
 		cursor = json.c_str();
 		end = cursor + json.size();
 
-		return parse();
+		if (peek_relevant_char() != '[')
+		{
+			return false;
+		}
+
+		// skip the opening square bracket
+		skip_char();
+
+		pool = &out.pool;
+		parse_stack.push(&out);
+
+		parse_array();
+
+		parse_stack.pop();
+
+		return !err;
 	}
 
-	entry* parser::parse(const file& json)
+	bool parser::parse_into(object_document& out, const std::string& json)
+	{
+		return false;
+	}
+
+	bool parser::parse_into(array_document& out, const file& json)
 	{
 		char buf[1024];
 
+		// buffer file into parser
 		ssize_t res = json.buffer(buf, sizeof(buf));
 
 		if (res == -1)
 		{
-			return nullptr;
+			err = IO_EXCEPTION;
+			return false;
 		}
 
 		cursor = buf;
 		end = buf + res;
 
-		return parse();
+		// begin parsing
+		if (peek_relevant_char() != '[')
+		{
+			return false;
+		}
+
+		// skip the opening square bracket
+		skip_char();
+
+		pool = &out.pool;
+		parse_stack.push(&out);
+
+		parse_array();
+
+		parse_stack.pop();
+
+		return !err;
+	}
+
+	bool parser::parse_into(object_document& out, const file& json)
+	{
+		return false;
 	}
 }

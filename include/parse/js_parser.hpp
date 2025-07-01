@@ -3,21 +3,43 @@
 
 
 #include <stack>
-#include "types/js_entry.hpp"
-#include "types/js_object.hpp"
-#include "memory_pool.hpp"
+#include "types/document/js_object_document.hpp"
+#include "types/document/js_array_document.hpp"
 #include "io/file.hpp"
 
 namespace json
 {
+	enum error_code : unsigned int
+	{
+		OK = 0,
+		INVALID_OBJECT_ENTRY_SYNTAX,
+		INVALID_ARRAY_ENTRY_SYNTAX,
+		INVALID_NUMBER_DIGIT,
+		EXPECTED_ULL,
+		EXPECTED_RUE,
+		EXPECTED_ALSE,
+		IO_EXCEPTION,
+		OVERFLOW
+	};
+
+	const char* code_str(error_code code);
+
 	class parser
 	{
 	public:
 		explicit parser();
 
-		entry* parse(const std::string& json);
+		bool parse_into(array_document& out, const std::string& json);
 
-		entry* parse(const file& json);
+		bool parse_into(object_document& out, const std::string& json);
+
+		bool parse_into(array_document& out, const file& json);
+
+		bool parse_into(object_document& out, const file& json);
+
+		[[nodiscard]] error_code code() const;
+
+		void print_code() const;
 
 	private:
 		// state methods
@@ -31,12 +53,26 @@ namespace json
 
 		[[nodiscard]] inline array* top_array() const;
 
+		void skip_char();
+
+		inline char peek_char();
+
 		char read_char();
 
 		/**
-		 * @return The first nonwhitespace char including and after cursor
+		 * @return The first nonwhitespace char or 'relevant' char at or after cursor
 		 */
-		char skip_whitespace();
+		char read_relevant_char();
+
+		/**
+		 * Functions the same as read_relevant_char() but doesn't increment past the char.
+		 * This is used for the parse_into methods to not advance past the first char if
+		 * the specified parse pattern is not matched (so if the API user tries to parse
+		 * an array but an object is what the json format is in, you don't advance past
+		 * the '{' so that you can still read the object if you so choose).
+		 * @return The first nonwhitespace char or 'relevant' char at or after cursor
+		 */
+		char peek_relevant_char();
 
 		/**
 		 * Asserts that the following characters in the stream match the string `s`,
@@ -58,7 +94,9 @@ namespace json
 		 */
 		std::string read_string(char until);
 
-		double read_double();
+		double read_decimal();
+
+		double read_number();
 
 		/**
 		 * Read an object, number, string, boolean, null, or array, and write it to the specified label.
@@ -69,11 +107,10 @@ namespace json
 
 		void parse_array();
 
-		entry* parse();
-
+		error_code err;
 		const char* cursor;
 		const char* end;
-		// only ever a root_array or root_object
+		// only ever an array_document or object_document
 		std::stack<entry*> parse_stack;
 		MemoryPool* pool;
 	};
