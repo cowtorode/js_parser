@@ -30,7 +30,7 @@ namespace json
 		if (!is_open())
 		{
 			// Uh oh, the file didn't open
-			perror("file::open_file(): open()");
+			perror("json::file::open_file(): open()");
 		}
 	}
 
@@ -42,7 +42,7 @@ namespace json
 
 			if (res == -1)
 			{
-				perror("file::close_file(): close()");
+				perror("json::file::close_file(): close()");
 			} else
 			{
 				fd = -1;
