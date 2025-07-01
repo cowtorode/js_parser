@@ -6,9 +6,27 @@
 #include "types/js_object.hpp"
 #include "types/js_array.hpp"
 #include "types/js_string.hpp"
-#include "js_root_array.hpp"
+#include "types/document/js_array_document.hpp"
 #include "parse/js_parser.hpp"
 #include "io/file.hpp"
+#include "parse/route/router.hpp"
+
+struct element
+{
+	double z;
+	std::string symbol;
+	std::string name;
+};
+
+struct table_of_elements
+{
+	element elements[2];
+};
+
+void print_element(const element& ele)
+{
+	std::cout << ele.z << ". " << ele.name << " (" << ele.symbol << ')' << std::endl;
+}
 
 void print_element(json::object* obj)
 {
@@ -37,84 +55,119 @@ void print_element(json::object* obj)
     std::cout << std::endl;
 }
 
-static constexpr const char* example_json = R"([{"z":1,"symbol":"H","name":"Hydrogen"},{"z":2,"symbol":"He","name":"Helium"}])";
+static constexpr const char* elements_json = R"([{"z":1,"symbol":"H","name":"Hydrogen"},{"z":2,"symbol":"He","name":"Helium"}])";
 
-void parse_json_string()
+void parse_json_string_root_array()
 {
 	json::parser parser;
+	json::array_document array;
 
-	json::entry* array = parser.parse(example_json);
-
-	if (array->type == json::ARRAY)
+	if (parser.parse_into(array, elements_json))
 	{
+		// success!
 		json::object* jso;
 
 		for (int i = 0; i < 2; ++i)
 		{
-			if (((json::array*) array)->get_object(i, jso) == OK)
+			if (array.get_object(i, jso) == OK)
 			{
 				print_element(jso);
 			}
 		}
+	} else if (parser.code())
+	{
+		// error occurred while parsing
+		parser.print_code();
+	} else
+	{
+		// the file points to an object_document
 	}
-
-	delete (json::root_array*) array;
 }
 
-void parse_json_file()
+void parse_json_file_root_array()
 {
 	json::parser parser;
+	json::array_document array;
+	json::file file("/home/cory/CLionProjects/json/example/example.json");
 
-	json::file example("/home/cory/CLionProjects/json/example/example.json");
+	file.open_file();
 
-	example.open_file();
-
-	json::entry* array = parser.parse(example);
-
-	example.close_file();
-
-	if (array->type == json::ARRAY)
+	if (parser.parse_into(array, file))
 	{
+		// success!
 		json::object* jso;
 
 		for (int i = 0; i < 2; ++i)
 		{
-			if (((json::array*) array)->get_object(i, jso) == OK)
+			if (array.get_object(i, jso) == OK)
 			{
 				print_element(jso);
 			}
 		}
+	} else if (parser.code())
+	{
+		// error occurred while parsing
+		parser.print_code();
+	} else
+	{
+		// the file points to an object_document
 	}
 
-	delete (json::root_array*) array;
+	// this is implicit, but I've included it here to showcase all control flow
+	file.close_file();
 }
 
-void parse_json_string_and_serialize_to_json_string()
+void parse_json_string_root_array_and_serialize_to_json_string_root_array()
 {
 	json::parser parser;
+	json::array_document array;
 
-	json::entry* array = parser.parse(R"([{"z":1,"symbol":"H","name":"Hydrogen"},{"z":2,"symbol":"He","name":"Helium"},{},[]])");
-
-	if (array->type == json::ARRAY)
+	if (parser.parse_into(array, R"([{"z":1,"symbol":"H","name":"Hydrogen"},{"z":2,"symbol":"He","name":"Helium"},{},[]])"))
 	{
-		std::cout << ((json::root_array*) array)->json_string() << std::endl;
+		// success!
+		std::cout << array.json_string() << std::endl;
 	}
+}
 
-	delete (json::root_array*) array;
+void parse_json_string_root_array_user_defined()
+{
+	json::router root;
+
+	json::router element_router;
+
+//	element_router.set_
+
+//	root.set_array_router(element_router);
+
+//	json::parser parser;
+
+//	parser.set_router(root);
+
+	table_of_elements table;
+
+//	parser.parse(elements_json, table);
+
+	for (int i = 0; i < 2; ++i)
+	{
+		print_element(table.elements[i]);
+	}
 }
 
 int main()
 {
     // json string
+	// array_document and object_document creation w/o parser
     // multiple file parsing with the same parser
     // parse all data types
     // after how many objects nested does the parser fail?
     // modifying a root object after its construction and rewriting (json string)
     // benchmarking
 
-	//parse_json_string();
-	//parse_json_file();
-	parse_json_string_and_serialize_to_json_string();
+	parse_json_string_root_array();
+	//parse_json_file_root_array();
+	//when your function name is 68 chars long:
+	//parse_json_string_root_array_and_serialize_to_json_string_root_array();
+	//parse_json_string_root_array_user_defined();
 
     return 0;
 }
