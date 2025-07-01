@@ -20,18 +20,22 @@ add_library(json STATIC
         src/types/js_string.cpp
         include/types/js_string.hpp
         include/types/js_result.hpp
-        include/js_root.hpp
-        src/js_root_object.cpp
-        include/js_root_object.hpp
-        src/js_root_array.cpp
-        include/js_root_array.hpp
+        include/types/document/js_document.hpp
+        src/types/document/js_object_document.cpp
+        include/types/document/js_object_document.hpp
+        src/types/document/js_array_document.cpp
+        include/types/document/js_array_document.hpp
         include/util/js_destructor.hpp
         src/util/js_destructor.cpp
-        src/memory_pool.cpp
-        include/memory_pool.hpp
-        src/js_root.cpp
+        src/types/document/memory_pool.cpp
+        include/types/document/memory_pool.hpp
+        src/types/document/js_document.cpp
         src/io/file.cpp
         include/io/file.hpp
+        src/parse/route/router.cpp
+        include/parse/route/router.hpp
+        include/util/math.hpp
+        src/util/math.cpp
 )
 
 # This makes the include/ directory available to anything that links json
