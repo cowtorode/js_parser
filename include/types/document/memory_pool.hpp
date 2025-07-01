@@ -11,11 +11,15 @@
 class MemoryPool
 {
 public:
+	MemoryPool();
+
+	explicit MemoryPool(size_t pool_size);
+
     ~MemoryPool();
 
     [[nodiscard]] ptrdiff_t allocated() const;
 
-    explicit MemoryPool(size_t pool_size);
+	void resize();
 
     /**
      * Pool allocation
@@ -23,7 +27,12 @@ public:
     void* palloc(size_t size, size_t alignment);
 
 private:
-    void* pool; // do not touch this
+	size_t sizeof_pool;
+	/**
+	 * The list of memory pages allocated to this MemoryPool. On destruction, this list needs
+	 * deleted, as well as all of its elements.
+	 */
+    void** pool;
     /**
      * The next address that's returned from allocate, assuming there's enough bytes remaining.
      */
