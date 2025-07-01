@@ -15,7 +15,7 @@ namespace json
 {
 	class array;
 
-	class js_root;
+	class document;
 
 	/**
 	 * Attempts to access a specific typed value from a named key in a JSON object.
@@ -47,15 +47,15 @@ namespace json
 
 		js_result get_array(const std::string& tag, array*& out) const;
 
-		object* add_object(js_root* root, const std::string& tag);
+		object* add_object(document* root, const std::string& tag);
 
-		void add_bool(js_root* root, const std::string& tag, bool x);
+		void add_bool(document* root, const std::string& tag, bool x);
 
-		void add_number(js_root* pool, const std::string& tag, double x);
+		void add_number(document* pool, const std::string& tag, double x);
 
-		void add_string(js_root* pool, const std::string& tag, const std::string& x);
+		void add_string(document* pool, const std::string& tag, const std::string& x);
 
-		array* add_array(js_root* pool, const std::string& tag);
+		array* add_array(document* pool, const std::string& tag);
 
 		void add(const std::string& tag, entry* data);
 

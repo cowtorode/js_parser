@@ -8,7 +8,7 @@
 #include "types/js_number.hpp"
 #include "types/js_string.hpp"
 #include "types/js_array.hpp"
-#include "js_root.hpp"
+#include "types/document/js_document.hpp"
 
 namespace json
 {
@@ -201,7 +201,7 @@ namespace json
         return TYPE_MISMATCH;
     }
 
-    object* object::add_object(js_root* root, const std::string& tag)
+    object* object::add_object(document* root, const std::string& tag)
     {
         object* jso = new(root->get_pool()->palloc(sizeof(object), alignof(object))) object;
 
@@ -210,22 +210,22 @@ namespace json
         return jso;
     }
 
-    void object::add_bool(js_root* root, const std::string& tag, bool x)
+    void object::add_bool(document* root, const std::string& tag, bool x)
     {
         add(tag, new(root->get_pool()->palloc(sizeof(boolean), alignof(boolean))) boolean(x));
     }
 
-    void object::add_number(js_root* root, const std::string& tag, double x)
+    void object::add_number(document* root, const std::string& tag, double x)
     {
         add(tag, new(root->get_pool()->palloc(sizeof(number), alignof(number))) number(x));
     }
 
-    void object::add_string(js_root* root, const std::string& tag, const std::string& x)
+    void object::add_string(document* root, const std::string& tag, const std::string& x)
     {
         add(tag, new(root->get_pool()->palloc(sizeof(string), alignof(string))) string(x));
     }
 
-    array* object::add_array(js_root* root, const std::string& tag)
+    array* object::add_array(document* root, const std::string& tag)
     {
         array* jsa = new(root->get_pool()->palloc(sizeof(array), alignof(array))) array;
 
