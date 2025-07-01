@@ -2,8 +2,8 @@
 // Created by cory on 6/24/25.
 //
 
-#ifndef JSON_JS_ROOT_HPP
-#define JSON_JS_ROOT_HPP
+#ifndef JSON_JS_DOCUMENT_HPP
+#define JSON_JS_DOCUMENT_HPP
 
 
 #include "types/js_entry.hpp"
@@ -11,10 +11,12 @@
 
 namespace json
 {
-	class js_root
+	class document
 	{
 	public:
-		explicit js_root(size_t pool_size);
+		document();
+
+		explicit document(size_t pool_size);
 
 		friend class object;
 
@@ -30,4 +32,4 @@ namespace json
 }
 
 
-#endif //JSON_JS_ROOT_HPP
+#endif //JSON_JS_DOCUMENT_HPP
