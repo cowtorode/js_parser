@@ -2,7 +2,7 @@
 // Created by cory on 6/24/25.
 //
 
-#include "types/document/js_document.hpp"
+#include "json/types/document/js_document.hpp"
 
 namespace json
 {

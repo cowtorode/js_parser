@@ -6,7 +6,7 @@
 #define JSON_JS_DESTRUCTOR_HPP
 
 
-#include "types/js_entry.hpp"
+#include "json/types/js_entry.hpp"
 
 namespace json
 {

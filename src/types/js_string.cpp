@@ -3,7 +3,7 @@
 //
 
 #include <utility>
-#include "types/js_string.hpp"
+#include "json/types/js_string.hpp"
 
 namespace json
 {

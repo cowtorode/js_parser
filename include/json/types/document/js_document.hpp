@@ -6,7 +6,7 @@
 #define JSON_JS_DOCUMENT_HPP
 
 
-#include "types/js_entry.hpp"
+#include "json/types/js_entry.hpp"
 #include "memory_pool.hpp"
 
 namespace json

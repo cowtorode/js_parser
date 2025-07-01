@@ -3,13 +3,13 @@
 //
 
 #include <iostream>
-#include "types/js_object.hpp"
-#include "types/js_array.hpp"
-#include "types/js_string.hpp"
-#include "types/document/js_array_document.hpp"
-#include "parse/js_parser.hpp"
-#include "io/file.hpp"
-#include "parse/route/router.hpp"
+#include "json/types/js_object.hpp"
+#include "json/types/js_array.hpp"
+#include "json/types/js_string.hpp"
+#include "json/types/document/js_array_document.hpp"
+#include "json/parse/js_parser.hpp"
+#include "json/io/file.hpp"
+#include "json/parse/route/router.hpp"
 
 struct element
 {

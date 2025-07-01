@@ -3,7 +3,7 @@
 //
 
 #include <sstream>
-#include "types/document/js_object_document.hpp"
+#include "json/types/document/js_object_document.hpp"
 
 namespace json
 {

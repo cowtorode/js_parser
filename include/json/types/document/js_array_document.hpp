@@ -7,7 +7,7 @@
 
 
 #include "js_document.hpp"
-#include "types/js_array.hpp"
+#include "json/types/js_array.hpp"
 
 namespace json
 {

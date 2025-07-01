@@ -4,8 +4,7 @@
 
 #include <cstdint>
 #include <cstdlib>
-#include <iostream>
-#include "types/document/memory_pool.hpp"
+#include "json/types/document/memory_pool.hpp"
 
 MemoryPool::MemoryPool() : sizeof_pool(0), pool(nullptr), cursor(nullptr), remaining(0) //: MemoryPool(1024)
 {}

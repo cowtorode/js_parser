@@ -7,7 +7,7 @@
 
 
 #include "js_document.hpp"
-#include "types/js_object.hpp"
+#include "json/types/js_object.hpp"
 #include "memory_pool.hpp"
 
 namespace json

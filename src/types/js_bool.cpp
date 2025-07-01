@@ -2,7 +2,7 @@
 // Created by cory on 6/14/25.
 //
 
-#include "types/js_bool.hpp"
+#include "json/types/js_bool.hpp"
 
 namespace json
 {

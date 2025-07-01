@@ -3,9 +3,9 @@
 
 
 #include <stack>
-#include "types/document/js_object_document.hpp"
-#include "types/document/js_array_document.hpp"
-#include "io/file.hpp"
+#include "json/types/document/js_object_document.hpp"
+#include "json/types/document/js_array_document.hpp"
+#include "json/io/file.hpp"
 
 namespace json
 {

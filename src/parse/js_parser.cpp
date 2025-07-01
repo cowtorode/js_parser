@@ -1,9 +1,9 @@
 #include <iostream>
-#include "parse/js_parser.hpp"
-#include "types/js_number.hpp"
-#include "types/js_bool.hpp"
-#include "types/js_string.hpp"
-#include "util/math.hpp"
+#include "json/parse/js_parser.hpp"
+#include "json/types/js_number.hpp"
+#include "json/types/js_bool.hpp"
+#include "json/types/js_string.hpp"
+#include "json/util/math.hpp"
 
 namespace json
 {

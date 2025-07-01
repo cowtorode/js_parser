@@ -5,36 +5,36 @@ set(CMAKE_CXX_STANDARD 20)
 
 add_library(json STATIC
         src/parse/js_parser.cpp
-        include/parse/js_parser.hpp
-        include/types/js_type.hpp
+        include/json/parse/js_parser.hpp
+        include/json/types/js_type.hpp
         src/types/js_entry.cpp
-        include/types/js_entry.hpp
+        include/json/types/js_entry.hpp
         src/types/js_object.cpp
-        include/types/js_object.hpp
+        include/json/types/js_object.hpp
         src/types/js_array.cpp
-        include/types/js_array.hpp
+        include/json/types/js_array.hpp
         src/types/js_bool.cpp
-        include/types/js_bool.hpp
+        include/json/types/js_bool.hpp
         src/types/js_number.cpp
-        include/types/js_number.hpp
+        include/json/types/js_number.hpp
         src/types/js_string.cpp
-        include/types/js_string.hpp
-        include/types/js_result.hpp
-        include/types/document/js_document.hpp
+        include/json/types/js_string.hpp
+        include/json/types/js_result.hpp
+        include/json/types/document/js_document.hpp
         src/types/document/js_object_document.cpp
-        include/types/document/js_object_document.hpp
+        include/json/types/document/js_object_document.hpp
         src/types/document/js_array_document.cpp
-        include/types/document/js_array_document.hpp
-        include/util/js_destructor.hpp
+        include/json/types/document/js_array_document.hpp
+        include/json/util/js_destructor.hpp
         src/util/js_destructor.cpp
         src/types/document/memory_pool.cpp
-        include/types/document/memory_pool.hpp
+        include/json/types/document/memory_pool.hpp
         src/types/document/js_document.cpp
         src/io/file.cpp
-        include/io/file.hpp
+        include/json/io/file.hpp
         src/parse/route/router.cpp
-        include/parse/route/router.hpp
-        include/util/math.hpp
+        include/json/parse/route/router.hpp
+        include/json/util/math.hpp
         src/util/math.cpp
 )
 

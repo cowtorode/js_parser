@@ -2,6 +2,8 @@
 // Created by cory on 6/30/25.
 //
 
+#include "json/util/math.hpp"
+
 bool is_relevant(char c)
 {
 	switch (c)
